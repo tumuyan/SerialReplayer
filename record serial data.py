@@ -11,13 +11,12 @@ def read_serial_to_csv(port_name, baud_rate, timeout_ms, rx_hex_data):
 
     # 创建CSV文件名
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"serial_data_{current_time}_{port_name.replace('/', '_')}_{baud_rate}.csv"
+    filename = f"serial_data_{current_time}_{port_name.replace('/', '_')}_{baud_rate}"
+    
 
     # 打开串口
-    with serial.Serial(port_name, baud_rate, timeout=timeout) as ser, open(filename, mode='w', newline='') as csvfile:
-        csv_writer = csv.writer(csvfile)
-        csv_writer.writerow(['Time (ms)', 'Data (Hex)'])  # 写入表头
-
+    with serial.Serial(port_name, baud_rate, timeout=timeout) as ser, open(filename + ".csv", mode='w', newline='') as csvfile, open(filename + ".bin", mode='wb') as binfile:
+        csvfile.write('Time (ms), Data (Hex)\r\n')
 
         byte_data = bytes.fromhex(rx_hex_data)
         print(f"Sending to {port_name}: {rx_hex_data}")
@@ -26,6 +25,7 @@ def read_serial_to_csv(port_name, baud_rate, timeout_ms, rx_hex_data):
         while True:
             if ser.in_waiting > 0:  # 检查是否有数据可读
                 data = ser.read(ser.in_waiting)  # 读取所有可用数据
+                binfile.write(data)
                 current_time = time.time()  # 获取当前时间
 
                 if start_time is None:
@@ -39,10 +39,11 @@ def read_serial_to_csv(port_name, baud_rate, timeout_ms, rx_hex_data):
 
                 # 如果经过的时间大于超时时间，则保存到新的一行
                 if (current_time - last_time) * 1000 > timeout_ms:
-                    csv_writer.writerow([int(relative_time), hex_data])  # 写入数据
+                    csvfile.write(f'{int(relative_time)}, {hex_data}')  # 写入数据
                     last_time = current_time  # 更新最后一次收到数据的时间
-                    print(f"\nRecive new line {relative_time/1000 :.3f} s: {hex_data}" ,end='')
+                    print(f"\nRecive [{relative_time/1000 :.3f} s]: {hex_data}" ,end='')
                 else:
+                    csvfile.write(f" {hex_data}")
                     print(f" {hex_data}" ,end='')
 
 if __name__ == "__main__":
