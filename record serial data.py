@@ -16,7 +16,7 @@ def read_serial_to_csv(port_name, baud_rate, timeout_ms, rx_hex_data):
 
     # 打开串口
     with serial.Serial(port_name, baud_rate, timeout=timeout) as ser, open(filename + ".csv", mode='w', newline='') as csvfile, open(filename + ".bin", mode='wb') as binfile:
-        csvfile.write('Time (ms), Data (Hex)\r\n')
+        csvfile.write('Time (ms), Data (Hex)')
 
         byte_data = bytes.fromhex(rx_hex_data)
         print(f"Sending to {port_name}: {rx_hex_data}")
@@ -39,7 +39,7 @@ def read_serial_to_csv(port_name, baud_rate, timeout_ms, rx_hex_data):
 
                 # 如果经过的时间大于超时时间，则保存到新的一行
                 if (current_time - last_time) * 1000 > timeout_ms:
-                    csvfile.write(f'{int(relative_time)}, {hex_data}')  # 写入数据
+                    csvfile.write(f'\r\n{int(relative_time)}, {hex_data}')  # 写入数据
                     last_time = current_time  # 更新最后一次收到数据的时间
                     print(f"\nRecive [{relative_time/1000 :.3f} s]: {hex_data}" ,end='')
                 else:

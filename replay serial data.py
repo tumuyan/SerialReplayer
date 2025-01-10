@@ -18,28 +18,32 @@ def send_data_to_serial(port_name, baud_rate, file_name, delay, start_time):
                 time_ms, hex_data = row
                 # 将16进制字符串转换为字节
                 byte_data = bytes.fromhex(hex_data)
-
+                time_ms = float(time_ms)
+                
+                ser.flush()
+                sleep_ms = time.time() - start_time - time_ms - delay
+                if (sleep_ms>0) :
+                    # 根据CSV文件中的时间间隔进行等待
+                    time.sleep(float(time_ms) / 1000.0)  # 将毫秒转换为秒
                 # 计算当前时间与上一个发送时间的间隔
                 elapsed_time = time.time() - start_time
-                print(f"Sending to {port_name}: {byte_data} at {elapsed_time:.2f} seconds")
-                
                 # 发送数据到串口
                 ser.write(byte_data)
-
-                # 根据CSV文件中的时间间隔进行等待
-                time.sleep(float(time_ms) / 1000.0)  # 将毫秒转换为秒
+                print(f"Sending to {port_name}: {hex_data} at {elapsed_time:.2f} seconds")
+                
 
 def main():
     # 串口参数配置
     serial_configs = [
-        {'port_name': 'COM15', 'baud_rate': 38400, 'file_name': 'serial_data_20250109_020738_COM15_38400.csv', 'delay': 5},
-        {'port_name': 'COM17', 'baud_rate': 38400, 'file_name': 'serial_data_20250109_021033_COM15_38400.csv', 'delay': 5},
+        {'port_name': 'COM19', 'baud_rate': 38400, 'file_name': 'serial_data_20250110_205546_COM1_38400.csv', 'delay': 5},
+        {'port_name': 'COM16', 'baud_rate': 38400, 'file_name': 'serial_data_20250110_205546_COM1_38400.csv', 'delay': 15},
+        {'port_name': 'COM21', 'baud_rate': 38400, 'file_name': 'serial_data_20250110_205546_COM1_38400.csv', 'delay': 5},
         # 可以继续添加其他串口配置
     ]
 
     threads = []
-    start_time = time.time()  # 获取程序开始运行的时间
 
+    start_time = time.time()  # 获取程序开始运行的时间
     # 创建并启动线程
     for config in serial_configs:
         thread = threading.Thread(target=send_data_to_serial, args=(config['port_name'], config['baud_rate'], config['file_name'], config['delay'], start_time))
